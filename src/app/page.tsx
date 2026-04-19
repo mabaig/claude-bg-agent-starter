@@ -18,8 +18,42 @@ const SUGGESTIONS = [
 export default function Home() {
   const { messages, sendMessage, status } = useChat({ transport })
   const [input, setInput] = useState('')
+  const [waitlistEmail, setWaitlistEmail] = useState('')
+  const [waitlistName, setWaitlistName] = useState('')
+  const [waitlistState, setWaitlistState] = useState<'idle' | 'loading' | 'success' | 'duplicate' | 'error'>('idle')
+  const [waitlistCount, setWaitlistCount] = useState<number | null>(null)
   const chatRef = useRef<HTMLDivElement>(null)
   const bottomRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    fetch('/api/waitlist').then(r => r.json()).then(d => setWaitlistCount(d.count)).catch(() => {})
+  }, [])
+
+  async function submitWaitlist(e: React.SyntheticEvent<HTMLFormElement>) {
+    e.preventDefault()
+    if (!waitlistEmail.trim()) return
+    setWaitlistState('loading')
+    try {
+      const res = await fetch('/api/waitlist', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: waitlistEmail, name: waitlistName }),
+      })
+      const data = await res.json()
+      if (data.alreadySignedUp) {
+        setWaitlistState('duplicate')
+      } else if (data.success) {
+        setWaitlistState('success')
+        setWaitlistCount(data.count)
+        setWaitlistEmail('')
+        setWaitlistName('')
+      } else {
+        setWaitlistState('error')
+      }
+    } catch {
+      setWaitlistState('error')
+    }
+  }
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
@@ -478,6 +512,70 @@ export default function Home() {
               </form>
             </div>
           </div>
+        </div>
+      </section>
+
+      {/* ── WAITLIST ── */}
+      <section className="py-24 px-6 bg-gradient-to-b from-white to-pink-50">
+        <div className="max-w-xl mx-auto text-center">
+          <div className="text-5xl mb-4" style={{ animation: 'rumiSparkle 2s ease-in-out infinite' }}>🎉</div>
+          <p className="text-pink-400 font-bold uppercase tracking-widest text-sm mb-2">Be First in Line</p>
+          <h2 className="text-4xl sm:text-5xl font-extrabold mb-4">
+            <span className="bg-gradient-to-r from-pink-500 to-purple-500 bg-clip-text text-transparent">
+              Join the Waitlist!
+            </span>
+          </h2>
+          <p className="text-gray-400 mb-2">
+            Rumi is launching soon — sign up to get early access and a special launch price. 💝
+          </p>
+          {waitlistCount !== null && waitlistCount > 0 && (
+            <p className="text-pink-500 font-bold text-sm mb-6">
+              🌟 {waitlistCount} curious families already signed up!
+            </p>
+          )}
+
+          {waitlistState === 'success' ? (
+            <div className="bg-green-50 border border-green-200 rounded-2xl p-8 text-center">
+              <div className="text-5xl mb-3">🎊</div>
+              <h3 className="text-xl font-extrabold text-green-700 mb-1">You&apos;re on the list!</h3>
+              <p className="text-green-600 text-sm">We&apos;ll let you know the moment Rumi is ready. Keep being curious! ✨</p>
+            </div>
+          ) : waitlistState === 'duplicate' ? (
+            <div className="bg-purple-50 border border-purple-200 rounded-2xl p-8 text-center">
+              <div className="text-5xl mb-3">🧸</div>
+              <h3 className="text-xl font-extrabold text-purple-700 mb-1">Already on the list!</h3>
+              <p className="text-purple-600 text-sm">You&apos;re already signed up — we&apos;ll be in touch soon! 🌟</p>
+            </div>
+          ) : (
+            <form onSubmit={submitWaitlist} className="mt-6 space-y-3">
+              <input
+                type="text"
+                placeholder="Your name (optional)"
+                value={waitlistName}
+                onChange={(e) => setWaitlistName(e.target.value)}
+                className="w-full rounded-full px-5 py-3 text-sm border-2 border-pink-200 focus:border-pink-400 focus:outline-none bg-white placeholder:text-pink-300 text-gray-700 transition-colors"
+              />
+              <input
+                type="email"
+                placeholder="Your email address ✉️"
+                value={waitlistEmail}
+                onChange={(e) => setWaitlistEmail(e.target.value)}
+                required
+                className="w-full rounded-full px-5 py-3 text-sm border-2 border-pink-200 focus:border-pink-400 focus:outline-none bg-white placeholder:text-pink-300 text-gray-700 transition-colors"
+              />
+              {waitlistState === 'error' && (
+                <p className="text-red-400 text-xs text-center">Something went wrong — please try again.</p>
+              )}
+              <button
+                type="submit"
+                disabled={waitlistState === 'loading' || !waitlistEmail.trim()}
+                className="w-full py-3 rounded-full text-white font-extrabold text-base transition-all duration-300 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
+                style={{ background: 'linear-gradient(135deg, #FF69B4, #DA70D6, #9370DB)', boxShadow: '0 0 24px #FF69B440' }}
+              >
+                {waitlistState === 'loading' ? '✨ Signing you up...' : "Count Me In! 🚀"}
+              </button>
+            </form>
+          )}
         </div>
       </section>
 
