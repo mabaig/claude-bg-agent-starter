@@ -13,7 +13,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Procurement AI Assistant",
+  title: "Aleena's Lumi Assistant",
   description: "Agentic AI assistant for procurement workflows",
 };
 
