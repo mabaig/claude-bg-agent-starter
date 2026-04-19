@@ -13,7 +13,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Aleena's Lumi Assistant",
+  title: "Rumi — The Magical Learning Friend",
   description: "Agentic AI assistant for procurement workflows",
 };
 

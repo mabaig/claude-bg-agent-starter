@@ -128,3 +128,18 @@
     @apply font-sans;
   }
 }
+
+@keyframes rumiFloat {
+  0%, 100% { transform: translateY(0px) rotate(-2deg); }
+  50% { transform: translateY(-22px) rotate(2deg); }
+}
+
+@keyframes rumiSparkle {
+  0%, 100% { opacity: 0.7; transform: scale(1) rotate(0deg); }
+  50% { opacity: 1; transform: scale(1.4) rotate(20deg); }
+}
+
+@keyframes rumiGlow {
+  0%, 100% { box-shadow: 0 0 20px #FF69B450, 0 0 40px #DA70D630; }
+  50% { box-shadow: 0 0 40px #FF69B480, 0 0 80px #DA70D650; }
+}
